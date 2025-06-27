@@ -37,6 +37,7 @@ export default function DashboardPage() {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState(null);
 
+  // Fetch expenses with pagination, filters, and search
   const fetchExpenses = async (
     page = currentPage,
     currentFilters = filters,
@@ -51,8 +52,8 @@ export default function DashboardPage() {
         currentFilters,
         currentSearchQuery
       );
-      setExpenses(data.expenses); // Assuming your API returns expenses in a 'expenses' field
-      setTotalPages(data.totalPages); // Assuming your API returns totalPages
+      setExpenses(data.expenses || []);
+      setTotalPages(data.pagination?.totalPages || data.totalPages || 1);
     } catch (err) {
       setError("Failed to fetch expenses.");
       console.error(err);
@@ -61,21 +62,25 @@ export default function DashboardPage() {
     }
   };
 
+  // Fetch dashboard analysis data
   const fetchAnalysisData = async () => {
     try {
       const data = await getAnalysisData(token);
-      setAnalysisData(data);
+      setAnalysisData(data.data || data); // Support both {data: ...} and direct
     } catch (err) {
       console.error("Failed to fetch analysis data:", err);
     }
   };
 
+  // Fetch categories and payment methods
   const fetchCategoriesAndPaymentMethods = async () => {
     try {
       const categoriesData = await getCategories(token);
-      setCategories(categoriesData);
+      setCategories(categoriesData.categories || categoriesData);
       const paymentMethodsData = await getPaymentMethods(token);
-      setPaymentMethods(paymentMethodsData);
+      setPaymentMethods(
+        paymentMethodsData.paymentMethods || paymentMethodsData
+      );
     } catch (err) {
       console.error("Failed to fetch categories or payment methods:", err);
     }
@@ -87,23 +92,24 @@ export default function DashboardPage() {
       fetchAnalysisData();
       fetchCategoriesAndPaymentMethods();
     }
-  }, [token]); // Refetch when token changes (e.g., on login)
+    // eslint-disable-next-line
+  }, [token]);
 
   useEffect(() => {
-    // Refetch expenses when page, filters, or search query change
     if (token) {
       fetchExpenses(currentPage, filters, searchQuery);
     }
+    // eslint-disable-next-line
   }, [currentPage, filters, searchQuery, token]);
 
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
-    setCurrentPage(1); // Reset to first page on filter change
+    setCurrentPage(1);
   };
 
   const handleSearch = (query) => {
     setSearchQuery(query);
-    setCurrentPage(1); // Reset to first page on search
+    setCurrentPage(1);
   };
 
   const handlePageChange = (page) => {
@@ -127,12 +133,11 @@ export default function DashboardPage() {
       } else {
         await addExpense(token, updatedExpense);
       }
-      fetchExpenses(); // Refresh the list
-      fetchAnalysisData(); // Analysis data might change
+      fetchExpenses();
+      fetchAnalysisData();
       handleCloseEditModal();
     } catch (err) {
       console.error("Failed to save expense:", err);
-      // Show an error message to the user
     }
   };
 
@@ -144,12 +149,11 @@ export default function DashboardPage() {
   const handleConfirmDelete = async () => {
     try {
       await deleteExpense(token, expenseToDelete);
-      fetchExpenses(); // Refresh the list
-      fetchAnalysisData(); // Analysis data might change
+      fetchExpenses();
+      fetchAnalysisData();
       handleCloseConfirmModal();
     } catch (err) {
       console.error("Failed to delete expense:", err);
-      // Show an error message to the user
     }
   };
 
@@ -159,7 +163,7 @@ export default function DashboardPage() {
   };
 
   const handleAddNewExpense = () => {
-    setSelectedExpense(null); // Clear selected expense for new entry
+    setSelectedExpense(null);
     setIsEditModalOpen(true);
   };
 
@@ -186,6 +190,9 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {
+          console.log("Expenses:", expenses) // Debugging line to check expenses
+        }
         {expenses.map((expense) => (
           <ExpenseCard
             key={expense._id}
@@ -208,11 +215,13 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-white p-4 rounded shadow">
               <h3 className="text-lg font-semibold mb-2">Monthly Summary</h3>
-              <p>Total Spent this Month: ₹{analysisData.totalSpentThisMonth}</p>
-              <p>Top Category: {analysisData.topCategory}</p>
+              <p>
+                Total Spent this Month: ₹{analysisData.totalSpentThisMonth || 0}
+              </p>
+              <p>Top Category: {analysisData.topCategory?.title || "N/A"}</p>{" "}
               <p>
                 Top 3 Payment Methods:{" "}
-                {analysisData.topPaymentMethods.join(", ")}
+                {(analysisData.topPaymentMethods || []).join(", ")}
               </p>
             </div>
             <div className="bg-white p-4 rounded shadow">
@@ -245,7 +254,7 @@ export default function DashboardPage() {
           categories={categories}
           paymentMethods={paymentMethods}
           onSave={handleSaveExpense}
-          fetchCategoriesAndPaymentMethods={fetchCategoriesAndPaymentMethods} // Pass refetch function
+          fetchCategoriesAndPaymentMethods={fetchCategoriesAndPaymentMethods}
         />
       )}
 
