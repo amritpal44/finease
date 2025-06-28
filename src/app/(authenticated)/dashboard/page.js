@@ -157,7 +157,7 @@ export default function DashboardPage() {
         queryState.filters,
         queryState.searchQuery
       );
-      fetchAnalysisData();
+      // fetchAnalysisData();
       handleCloseEditModal();
     } catch (err) {
       console.error("Failed to save expense:", err);

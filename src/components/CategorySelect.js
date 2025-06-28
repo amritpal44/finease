@@ -6,6 +6,7 @@ export default function CategorySelect({
   selectedCategory,
   onSelectCategory,
   includeAllOption = false,
+  onCreateNewCategory,
 }) {
   const [searchText, setSearchText] = useState("");
 
@@ -22,25 +23,28 @@ export default function CategorySelect({
     <div className="relative">
       <input
         type="text"
-        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+        className="mt-1 block w-full rounded-lg border border-[#3d65ff]/30 bg-white px-4 py-2 shadow-md focus:border-[#3d65ff] focus:ring-2 focus:ring-[#3d65ff]/20 text-[#1e2a47] placeholder:text-[#3d65ff]/60 transition-all duration-150"
         placeholder="Search or select category"
-        value={searchText || selectedCategory} // Show selected value or search text
+        value={
+          searchText ||
+          categories.find((cat) => cat._id === selectedCategory)?.title ||
+          selectedCategory
+        }
         onChange={(e) => {
           setSearchText(e.target.value);
-          onSelectCategory(""); // Clear selected category when searching
+          onSelectCategory("");
         }}
-        onBlur={() => {
-          // If no category is selected after blur, clear search text
-          if (!selectedCategory) {
-            setSearchText("");
-          }
-        }}
+        // onBlur={() => {
+        //   if (!selectedCategory) {
+        //     setSearchText("");
+        //   }
+        // }}
       />
-      {searchText && ( // Show dropdown only when searching
-        <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-auto">
+      {searchText && (
+        <ul className="absolute z-20 w-full bg-white border border-[#3d65ff]/20 rounded-lg shadow-xl mt-1 max-h-60 overflow-auto animate-fade-in">
           {includeAllOption && (
             <li
-              className="cursor-pointer select-none relative py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-100"
+              className="cursor-pointer select-none py-2 px-4 text-[#3d65ff] hover:bg-[#eaf0ff] rounded-t-lg"
               onClick={() => {
                 onSelectCategory("");
                 setSearchText("");
@@ -49,32 +53,41 @@ export default function CategorySelect({
               All
             </li>
           )}
-          {filteredCategories.map((category) => (
+          {filteredCategories.map((category, idx) => (
             <li
-              key={category._id} // Assuming your category objects have an _id
-              className="cursor-pointer select-none relative py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-100"
+              key={category._id || idx}
+              className="cursor-pointer select-none py-2 px-4 text-[#1e2a47] hover:bg-[#eaf0ff] border-b last:border-b-0 border-[#3d65ff]/10"
               onClick={() => {
-                onSelectCategory(category.name); // Assuming category objects have a 'name' field
-                setSearchText(""); // Clear search text on selection
+                onSelectCategory(category._id);
+                setSearchText("");
               }}
             >
-              {category.name}
+              {category.title}
             </li>
           ))}
           {filteredCategories.length === 0 && !includeAllOption && (
-            <li className="relative py-2 pl-3 pr-9 text-gray-700">
-              No categories found.
-            </li>
+            <>
+              <li className="py-2 px-4 text-gray-400">No categories found.</li>
+              {searchText && (
+                <li
+                  className="cursor-pointer select-none py-2 px-4 text-[#3d65ff] hover:bg-[#eaf0ff] border-t border-[#3d65ff]/10 font-semibold"
+                  onClick={() => onCreateNewCategory(searchText)}
+                >
+                  + Create new Category "{searchText}"
+                </li>
+              )}
+            </>
           )}
-          {/* Option to create new category can be handled in the parent modal/page */}
         </ul>
       )}
-      {!searchText &&
-        selectedCategory && ( // Show selected category if no search text
-          <div className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-100 text-gray-700">
-            {selectedCategory}
-          </div>
-        )}
+      {!searchText && selectedCategory && (
+        <div className="mt-1 block w-full rounded-lg border border-[#3d65ff]/20 shadow p-2 bg-[#eaf0ff] text-[#3d65ff] font-semibold text-center">
+          Category Selected: "
+          {categories.find((cat) => cat._id === selectedCategory)?.title ||
+            selectedCategory}
+          "
+        </div>
+      )}
     </div>
   );
 }

@@ -17,12 +17,14 @@ export default function ExpenseEditModal({
 }) {
   const { token } = useAuth();
   const [formData, setFormData] = useState({
+    title: "",
     amount: "",
     category: "",
     date: "",
     paymentMethod: "",
     notes: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
@@ -33,15 +35,17 @@ export default function ExpenseEditModal({
   useEffect(() => {
     if (expense) {
       setFormData({
+        title: expense.title || "",
         amount: expense.amount,
-        category: expense.category.title,
+        category: expense.category._id,
         date: new Date(expense.date).toISOString().split("T")[0], // Format date for input
-        paymentMethod: expense.paymentMethod.title,
+        paymentMethod: expense.paymentMethod._id,
         notes: expense.notes || "",
       });
     } else {
       // Reset form for adding new expense
       setFormData({
+        title: "",
         amount: "",
         category: "",
         date: new Date().toISOString().split("T")[0],
@@ -63,6 +67,7 @@ export default function ExpenseEditModal({
 
     // Basic validation
     if (
+      !formData.title ||
       !formData.amount ||
       !formData.category ||
       !formData.date ||
@@ -88,12 +93,12 @@ export default function ExpenseEditModal({
     }
   };
 
-  const handleCreateCategory = async () => {
-    if (!newCategoryName.trim()) return;
+  const handleCreateCategory = async (newTitle) => {
+    if (!newTitle && !newCategoryName.trim()) return;
     setLoading(true);
     setError(null);
     try {
-      await createCategory(token, { name: newCategoryName });
+      await createCategory(token, { title: newTitle || newCategoryName });
       setNewCategoryName("");
       setIsCreatingCategory(false);
       await fetchCategoriesAndPaymentMethods(); // Refetch categories after creation
@@ -105,12 +110,12 @@ export default function ExpenseEditModal({
     }
   };
 
-  const handleCreatePaymentMethod = async () => {
-    if (!newPaymentMethodName.trim()) return;
+  const handleCreatePaymentMethod = async (newTitle) => {
+    if (!newTitle && !newPaymentMethodName.trim()) return;
     setLoading(true);
     setError(null);
     try {
-      await createPaymentMethod(token, { name: newPaymentMethodName });
+      await createPaymentMethod(token, { title: newTitle || newPaymentMethodName });
       setNewPaymentMethodName("");
       setIsCreatingPaymentMethod(false);
       await fetchCategoriesAndPaymentMethods(); // Refetch payment methods after creation
@@ -126,10 +131,27 @@ export default function ExpenseEditModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      <h2 className="text-xl font-bold mb-4">
+      <h2 className="text-xl font-bold mb-4 text-gray-800">
         {expense ? "Edit Expense" : "Add New Expense"}
       </h2>
       <form onSubmit={handleSave}>
+        <div className="mb-4">
+          <label
+            htmlFor="title"
+            className="block text-gray-700 text-sm font-bold mb-2"
+          >
+            Title:
+          </label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            value={formData.title}
+            onChange={handleChange}
+            required
+          />
+        </div>
         <div className="mb-4">
           <label
             htmlFor="amount"
@@ -147,6 +169,7 @@ export default function ExpenseEditModal({
             required
           />
         </div>
+
         <div className="mb-4">
           <label
             htmlFor="category"
@@ -160,39 +183,13 @@ export default function ExpenseEditModal({
             onSelectCategory={(value) =>
               setFormData({ ...formData, category: value })
             }
-            onCreateNew={() => setIsCreatingCategory(true)}
+            onCreateNewCategory={async (newTitle) => {
+              await handleCreateCategory(newTitle);
+              setNewCategoryName(newTitle);
+            }}
           />
-          {isCreatingCategory && (
-            <div
-              className="mt-2 flex // components/ExpenseEditModal.js (Continued)
-                items-center"
-            >
-              <input
-                type="text"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mr-2"
-                placeholder="New Category Name"
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-              />
-              <button
-                type="button"
-                onClick={handleCreateCategory}
-                className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                disabled={loading}
-              >
-                Create
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsCreatingCategory(false)}
-                className="ml-2 text-gray-600 hover:text-gray-800"
-                disabled={loading}
-              >
-                Cancel
-              </button>
-            </div>
-          )}
         </div>
+
         <div className="mb-4">
           <label
             htmlFor="date"
@@ -210,6 +207,7 @@ export default function ExpenseEditModal({
             required
           />
         </div>
+
         <div className="mb-4">
           <label
             htmlFor="paymentMethod"
@@ -223,9 +221,12 @@ export default function ExpenseEditModal({
             onSelectPaymentMethod={(value) =>
               setFormData({ ...formData, paymentMethod: value })
             }
-            onCreateNew={() => setIsCreatingPaymentMethod(true)}
+            onCreateNewPaymentMethod={ async (newTitle) => {
+              await handleCreatePaymentMethod(newTitle);
+              setNewPaymentMethodName(newTitle);
+            }}
           />
-          {isCreatingPaymentMethod && (
+          {/* {isCreatingPaymentMethod && (
             <div className="mt-2 flex items-center">
               <input
                 type="text"
@@ -251,7 +252,7 @@ export default function ExpenseEditModal({
                 Cancel
               </button>
             </div>
-          )}
+          )} */}
         </div>
         <div className="mb-4">
           <label

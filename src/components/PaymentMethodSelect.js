@@ -6,6 +6,7 @@ export default function PaymentMethodSelect({
   selectedPaymentMethod,
   onSelectPaymentMethod,
   includeAllOption = false,
+  onCreateNewPaymentMethod,
 }) {
   const [searchText, setSearchText] = useState("");
 
@@ -22,24 +23,29 @@ export default function PaymentMethodSelect({
     <div className="relative">
       <input
         type="text"
-        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+        className="mt-1 block w-full rounded-lg border border-[#3d65ff]/30 bg-white px-4 py-2 shadow-md focus:border-[#3d65ff] focus:ring-2 focus:ring-[#3d65ff]/20 text-[#1e2a47] placeholder:text-[#3d65ff]/60 transition-all duration-150"
         placeholder="Search or select payment method"
-        value={searchText || selectedPaymentMethod}
+        value={
+          searchText ||
+          paymentMethods.find((method) => method._id === selectedPaymentMethod)
+            ?.title ||
+          selectedPaymentMethod
+        }
         onChange={(e) => {
           setSearchText(e.target.value);
-          onSelectPaymentMethod(""); // Clear selected value when searching
+          onSelectPaymentMethod("");
         }}
-        onBlur={() => {
-          if (!selectedPaymentMethod) {
-            setSearchText("");
-          }
-        }}
+        // onBlur={() => {
+        //   if (!selectedPaymentMethod) {
+        //     setSearchText("");
+        //   }
+        // }}
       />
       {searchText && (
-        <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-auto">
+        <ul className="absolute z-20 w-full bg-white border border-[#3d65ff]/20 rounded-lg shadow-xl mt-1 max-h-60 overflow-auto animate-fade-in">
           {includeAllOption && (
             <li
-              className="cursor-pointer select-none relative py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-100"
+              className="cursor-pointer select-none py-2 px-4 text-[#3d65ff] hover:bg-[#eaf0ff] rounded-t-lg"
               onClick={() => {
                 onSelectPaymentMethod("");
                 setSearchText("");
@@ -48,29 +54,40 @@ export default function PaymentMethodSelect({
               All
             </li>
           )}
-          {filteredPaymentMethods.map((method) => (
+          {filteredPaymentMethods.map((method, idx) => (
             <li
-              key={method._id} // Assuming your payment method objects have an _id
-              className="cursor-pointer select-none relative py-2 pl-3 pr-9 text-gray-900 hover:bg-gray-100"
+              key={method._id || idx}
+              className="cursor-pointer select-none py-2 px-4 text-[#1e2a47] hover:bg-[#eaf0ff] border-b last:border-b-0 border-[#3d65ff]/10"
               onClick={() => {
-                onSelectPaymentMethod(method.name); // Assuming payment method objects have a 'name' field
+                onSelectPaymentMethod(method._id);
                 setSearchText("");
               }}
             >
-              {method.name}
+              {method.title}
             </li>
           ))}
           {filteredPaymentMethods.length === 0 && !includeAllOption && (
-            <li className="relative py-2 pl-3 pr-9 text-gray-700">
-              No payment methods found.
-            </li>
+            <>
+              <li className="py-2 px-4 text-gray-800">
+                No payment methods found.
+              </li>
+              {searchText && (
+                <li
+                  className="cursor-pointer select-none py-2 px-4 text-[#3d65ff] hover:bg-[#eaf0ff] border-t border-[#3d65ff]/10 font-semibold"
+                  onClick={() => onCreateNewPaymentMethod(searchText)}
+                >
+                  + Create new Payment Method "{searchText}"
+                </li>
+              )}
+            </>
           )}
-          {/* Option to create new payment method can be handled in the parent modal/page */}
         </ul>
       )}
       {!searchText && selectedPaymentMethod && (
-        <div className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-gray-100 text-gray-700">
-          {selectedPaymentMethod}
+        <div className="mt-1 block w-full rounded-lg border border-[#3d65ff]/20 shadow p-2 bg-[#eaf0ff] text-[#3d65ff] font-semibold text-center">
+          Payment Method Selected: "
+          {paymentMethods.find((method) => method._id === selectedPaymentMethod)
+            ?.title || selectedPaymentMethod}"
         </div>
       )}
     </div>

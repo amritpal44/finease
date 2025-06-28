@@ -5,7 +5,7 @@ export default function ExpenseCard({ expense, onEditClick, onDeleteClick }) {
     <div className="bg-gradient-to-br from-[#eaf0ff] via-[#f7faff] to-[#dbeafe] p-6 rounded-2xl shadow-xl border border-[#3d65ff]/10 transition-transform hover:scale-[1.025] hover:shadow-2xl duration-200 min-w-[260px]">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-xl font-bold text-[#3d65ff] flex-1 truncate">
-          {expense.category?.title || "No Category"}
+          {expense.title || "No Title"}
         </h3>
         <span className="bg-[#3d65ff]/10 text-[#3d65ff] px-3 py-1 rounded-full text-sm font-semibold ml-2">
           ₹{expense.amount}
@@ -19,6 +19,10 @@ export default function ExpenseCard({ expense, onEditClick, onDeleteClick }) {
         <span className="flex items-center gap-2">
           <span className="font-medium">Payment:</span>
           {expense.paymentMethod?.title || "No Payment Method"}
+        </span>
+        <span className="flex items-center gap-2">
+          <span className="font-medium">Category:</span>
+          {expense.category?.title || "No Category"}
         </span>
         {expense.note && (
           <span className="flex items-center gap-2">
