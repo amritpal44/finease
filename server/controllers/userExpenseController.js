@@ -100,8 +100,12 @@ exports.createExpense = async (req, res) => {
     await expense.save();
 
     // Increment category and payment method count
-    await Category.findByIdAndUpdate(categoryExists._id, { $inc: { count: 1 } });
-    await PaymentMethod.findByIdAndUpdate(paymentMethodExists._id, { $inc: { count: 1 } });
+    await Category.findByIdAndUpdate(categoryExists._id, {
+      $inc: { count: 1 },
+    });
+    await PaymentMethod.findByIdAndUpdate(paymentMethodExists._id, {
+      $inc: { count: 1 },
+    });
 
     res.status(201).json({
       success: true,
@@ -152,7 +156,10 @@ exports.updateExpense = async (req, res) => {
     }
 
     // Find the existing expense to check if category or payment method is changed
-    const existingExpense = await Expense.findOne({ _id: id, user: req.user.id });
+    const existingExpense = await Expense.findOne({
+      _id: id,
+      user: req.user.id,
+    });
     if (!existingExpense) {
       return res
         .status(404)
@@ -161,14 +168,25 @@ exports.updateExpense = async (req, res) => {
 
     // If category changed, update counts
     if (existingExpense.category.toString() !== categoryExists._id.toString()) {
-      await Category.findByIdAndUpdate(existingExpense.category, { $inc: { count: -1 } });
-      await Category.findByIdAndUpdate(categoryExists._id, { $inc: { count: 1 } });
+      await Category.findByIdAndUpdate(existingExpense.category, {
+        $inc: { count: -1 },
+      });
+      await Category.findByIdAndUpdate(categoryExists._id, {
+        $inc: { count: 1 },
+      });
     }
 
     // If payment method changed, update counts
-    if (existingExpense.paymentMethod.toString() !== paymentMethodExists._id.toString()) {
-      await PaymentMethod.findByIdAndUpdate(existingExpense.paymentMethod, { $inc: { count: -1 } });
-      await PaymentMethod.findByIdAndUpdate(paymentMethodExists._id, { $inc: { count: 1 } });
+    if (
+      existingExpense.paymentMethod.toString() !==
+      paymentMethodExists._id.toString()
+    ) {
+      await PaymentMethod.findByIdAndUpdate(existingExpense.paymentMethod, {
+        $inc: { count: -1 },
+      });
+      await PaymentMethod.findByIdAndUpdate(paymentMethodExists._id, {
+        $inc: { count: 1 },
+      });
     }
 
     const expense = await Expense.findOneAndUpdate(
@@ -220,7 +238,9 @@ exports.deleteExpense = async (req, res) => {
 
     // Decrement category and payment method count
     await Category.findByIdAndUpdate(expense.category, { $inc: { count: -1 } });
-    await PaymentMethod.findByIdAndUpdate(expense.paymentMethod, { $inc: { count: -1 } });
+    await PaymentMethod.findByIdAndUpdate(expense.paymentMethod, {
+      $inc: { count: -1 },
+    });
 
     res.json({ success: true, message: "Expense deleted successfully" });
   } catch (error) {
@@ -237,7 +257,11 @@ exports.updateMonthlyBudget = async (req, res) => {
   try {
     const { totalMonthlyBudget } = req.body;
 
-    if (totalMonthlyBudget === undefined || isNaN(totalMonthlyBudget) || totalMonthlyBudget < 0) {
+    if (
+      totalMonthlyBudget === undefined ||
+      isNaN(totalMonthlyBudget) ||
+      totalMonthlyBudget < 0
+    ) {
       return res.status(400).json({
         success: false,
         message: "A valid totalMonthlyBudget is required.",
@@ -266,6 +290,29 @@ exports.updateMonthlyBudget = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to update monthly budget.",
+      error: error.message,
+    });
+  }
+};
+
+// Get current monthly budget for the logged-in user
+exports.getMonthlyBudget = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+    res.json({
+      success: true,
+      totalMonthlyBudget: user.totalMonthlyBudget || 0,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch monthly budget.",
       error: error.message,
     });
   }

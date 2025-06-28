@@ -1,3 +1,10 @@
+// Get current monthly budget
+export const getMonthlyBudget = async (token) => {
+  const response = await fetch(`${API_BASE_URL}/expenses/budget`, {
+    headers: getAuthHeaders(token),
+  });
+  return handleResponse(response);
+};
 const API_BASE_URL = "http://localhost:5000/api";
 
 const handleResponse = async (response) => {

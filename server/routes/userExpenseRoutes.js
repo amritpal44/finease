@@ -15,6 +15,8 @@ router.put("/:id", auth, userExpenseController.updateExpense);
 // Delete an expense
 router.delete("/:id", auth, userExpenseController.deleteExpense);
 
+// Get current monthly budget for the logged-in user
+router.get("/budget", auth, userExpenseController.getMonthlyBudget);
 // Update total monthly budget for the logged-in user
 router.patch("/budget", auth, userExpenseController.updateMonthlyBudget);
 

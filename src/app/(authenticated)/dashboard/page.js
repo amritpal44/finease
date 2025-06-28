@@ -9,6 +9,7 @@ import SearchBar from "../../../components/SearchBar";
 import Pagination from "../../../components/Pagination";
 import ChartComponent from "../../../components/ChartComponent";
 import AddNewExpenseButton from "../../../components/AddNewExpenseButton";
+import EditMonthlyBudgetButton from "../../../components/EditMonthlyBudgetButton";
 import {
   getExpenses,
   getAnalysisData,
@@ -305,10 +306,14 @@ export default function DashboardPage() {
           categories={categories}
           paymentMethods={paymentMethods}
         />
-        <SearchBar onSearch={handleSearch} />
-        <AddNewExpenseButton onClick={handleAddNewExpense} />
+        <div className="flex items-center gap-2 flex-wrap w-full justify-between">
+          <SearchBar onSearch={handleSearch} />
+          <div className="flex items-center gap-2">
+            <EditMonthlyBudgetButton token={token} />
+            <AddNewExpenseButton onClick={handleAddNewExpense} />
+          </div>
+        </div>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {
           console.log("Expenses:", expenses) // Debugging line to check expenses
