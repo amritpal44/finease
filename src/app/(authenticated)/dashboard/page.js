@@ -25,6 +25,14 @@ export default function DashboardPage() {
   const { token } = useAuth();
   const [expenses, setExpenses] = useState([]);
   const [analysisData, setAnalysisData] = useState(null);
+  // Date range for analysis
+  const now = new Date();
+  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const [analysisRange, setAnalysisRange] = useState({
+    start: firstDayOfMonth.toISOString().slice(0, 10),
+    end: lastDayOfMonth.toISOString().slice(0, 10),
+  });
   const [categories, setCategories] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -136,9 +144,10 @@ export default function DashboardPage() {
   };
 
   // Fetch dashboard analysis data
-  const fetchAnalysisData = async () => {
+  // Correct API usage: pass startDate and endDate as separate args
+  const fetchAnalysisData = async (range = analysisRange) => {
     try {
-      const data = await getAnalysisData(token);
+      const data = await getAnalysisData(token, range.start, range.end);
       const arr = data.data || data;
       setAnalysisData(processAnalysisData(arr));
     } catch (err) {
@@ -175,9 +184,15 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (token) {
-      fetchAnalysisData();
+      fetchAnalysisData(analysisRange);
     }
-  }, [token]);
+    // eslint-disable-next-line
+  }, [token, analysisRange]);
+  // Handler for date range change
+  const handleAnalysisRangeChange = (e) => {
+    const { name, value } = e.target;
+    setAnalysisRange((prev) => ({ ...prev, [name]: value }));
+  };
 
   // useEffect(() => {
   //   if (token) {
@@ -293,6 +308,7 @@ export default function DashboardPage() {
         <SearchBar onSearch={handleSearch} />
         <AddNewExpenseButton onClick={handleAddNewExpense} />
       </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {
           console.log("Expenses:", expenses) // Debugging line to check expenses
@@ -314,6 +330,29 @@ export default function DashboardPage() {
       {analysisData && (
         <section className="mt-10">
           <h2 className="text-2xl font-bold mb-6 text-[#eeeff1]">Analysis</h2>
+          {/* Analysis controls */}
+          <div className="flex flex-wrap justify-end items-center gap-2 mb-4 p-2 bg-[#f5f8ff] rounded-xl shadow border border-[#3d65ff]/10">
+            <span className="font-semibold text-[#3d65ff] mr-2 text-base">
+              Analysis Range:
+            </span>
+            <input
+              type="date"
+              name="start"
+              value={analysisRange.start}
+              max={analysisRange.end}
+              onChange={handleAnalysisRangeChange}
+              className="border border-[#3d65ff]/30 focus:border-[#3d65ff] rounded-lg px-3 py-1.5 text-sm text-[#1e2a47] bg-white transition-colors duration-150 outline-none shadow-sm hover:border-[#3d65ff]"
+            />
+            <span className="mx-1 text-[#3d65ff] font-bold">to</span>
+            <input
+              type="date"
+              name="end"
+              value={analysisRange.end}
+              min={analysisRange.start}
+              onChange={handleAnalysisRangeChange}
+              className="border border-[#3d65ff]/30 focus:border-[#3d65ff] rounded-lg px-3 py-1.5 text-sm text-[#1e2a47] bg-white transition-colors duration-150 outline-none shadow-sm hover:border-[#3d65ff]"
+            />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white/95 border border-[#3d65ff]/10 rounded-2xl shadow-lg p-6 flex flex-col justify-center min-h-[200px]">
               <h3 className="text-lg font-semibold mb-3 text-[#3d65ff]">
@@ -321,7 +360,7 @@ export default function DashboardPage() {
               </h3>
               <div className="space-y-2 text-[#1e2a47] text-base">
                 <div className="flex items-center justify-between">
-                  <span>Total Spent this Month:</span>
+                  <span>Total Spent this Range:</span>
                   <span className="font-bold text-lg text-[#3d65ff]">
                     ₹{analysisData.totalSpentThisMonth || 0}
                   </span>
@@ -369,7 +408,7 @@ export default function DashboardPage() {
           </div>
         </section>
       )}
-      
+
       {isEditModalOpen && (
         <ExpenseEditModal
           isOpen={isEditModalOpen}
