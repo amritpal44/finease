@@ -17,6 +17,7 @@ import {
   addExpense,
   updateExpense,
   deleteExpense,
+  filterExpenses,
 } from "../../../utils/api";
 import { useAuth } from "../../../hooks/useAuth";
 
@@ -28,29 +29,25 @@ export default function DashboardPage() {
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  // Combine filters, searchQuery, and currentPage into a single state object to avoid double renders
+  const [queryState, setQueryState] = useState({
+    currentPage: 1,
+    filters: {},
+    searchQuery: "",
+  });
   const [totalPages, setTotalPages] = useState(1);
-  const [filters, setFilters] = useState({});
-  const [searchQuery, setSearchQuery] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState(null);
 
   // Fetch expenses with pagination, filters, and search
-  const fetchExpenses = async (
-    page = currentPage,
-    currentFilters = filters,
-    currentSearchQuery = searchQuery
-  ) => {
+  const fetchExpenses = async (page, currentFilters, currentSearchQuery) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getExpenses(
-        token,
-        page,
-        currentFilters,
-        currentSearchQuery
+      const data = await filterExpenses(
+        token
       );
       setExpenses(data.expenses || []);
       setTotalPages(data.pagination?.totalPages || data.totalPages || 1);
@@ -86,34 +83,56 @@ export default function DashboardPage() {
     }
   };
 
-  useEffect(() => {
+  useEffect( () => {
     if (token) {
-      fetchExpenses();
-      fetchAnalysisData();
-      fetchCategoriesAndPaymentMethods();
+      fetchExpenses(token);
+      fetchCategoriesAndPaymentMethods()
     }
-    // eslint-disable-next-line
+    else {
+      console.log("Token not found, skipping fetchExpenses");
+    }
   }, [token]);
 
-  useEffect(() => {
-    if (token) {
-      fetchExpenses(currentPage, filters, searchQuery);
-    }
-    // eslint-disable-next-line
-  }, [currentPage, filters, searchQuery, token]);
+  // useEffect(() => {
+  //   if (token) {
+  //     fetchAnalysisData();
+  //     fetchCategoriesAndPaymentMethods();
+  //   }
+  //   // eslint-disable-next-line
+  // }, [token]);
+
+  // useEffect(() => {
+  //   if (token) {
+  //     fetchExpenses(
+  //       queryState.currentPage,
+  //       queryState.filters,
+  //       queryState.searchQuery
+  //     );
+  //   }
+  //   // eslint-disable-next-line
+  // }, [queryState, token]);
 
   const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
-    setCurrentPage(1);
+    setQueryState((prev) => ({
+      ...prev,
+      filters: newFilters,
+      currentPage: 1,
+    }));
   };
 
   const handleSearch = (query) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
+    setQueryState((prev) => ({
+      ...prev,
+      searchQuery: query,
+      currentPage: 1,
+    }));
   };
 
   const handlePageChange = (page) => {
-    setCurrentPage(page);
+    setQueryState((prev) => ({
+      ...prev,
+      currentPage: page,
+    }));
   };
 
   const handleEditClick = (expense) => {
@@ -133,7 +152,11 @@ export default function DashboardPage() {
       } else {
         await addExpense(token, updatedExpense);
       }
-      fetchExpenses();
+      fetchExpenses(
+        queryState.currentPage,
+        queryState.filters,
+        queryState.searchQuery
+      );
       fetchAnalysisData();
       handleCloseEditModal();
     } catch (err) {
@@ -149,7 +172,11 @@ export default function DashboardPage() {
   const handleConfirmDelete = async () => {
     try {
       await deleteExpense(token, expenseToDelete);
-      fetchExpenses();
+      fetchExpenses(
+        queryState.currentPage,
+        queryState.filters,
+        queryState.searchQuery
+      );
       fetchAnalysisData();
       handleCloseConfirmModal();
     } catch (err) {
@@ -180,12 +207,12 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
 
       <div className="flex justify-between items-center mb-4">
-        <FilterBar
+        {/* <FilterBar
           onFilterChange={handleFilterChange}
           categories={categories}
           paymentMethods={paymentMethods}
         />
-        <SearchBar onSearch={handleSearch} />
+        <SearchBar onSearch={handleSearch} /> */}
         <AddNewExpenseButton onClick={handleAddNewExpense} />
       </div>
 
@@ -204,11 +231,11 @@ export default function DashboardPage() {
       </div>
 
       <Pagination
-        currentPage={currentPage}
+        currentPage={queryState.currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
-
+{/* 
       {analysisData && (
         <div className="mt-8">
           <h2 className="text-xl font-bold mb-4">Analysis</h2>
@@ -245,6 +272,7 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+      */}
 
       {isEditModalOpen && (
         <ExpenseEditModal
@@ -258,6 +286,7 @@ export default function DashboardPage() {
         />
       )}
 
+    {/*  
       {isConfirmModalOpen && (
         <ConfirmationModal
           isOpen={isConfirmModalOpen}
@@ -265,7 +294,10 @@ export default function DashboardPage() {
           onConfirm={handleConfirmDelete}
           message="Are you sure you want to delete this expense?"
         />
-      )}
+      )} 
+    */}
+
+
     </div>
   );
 }

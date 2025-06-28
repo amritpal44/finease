@@ -34,9 +34,9 @@ export default function ExpenseEditModal({
     if (expense) {
       setFormData({
         amount: expense.amount,
-        category: expense.category,
+        category: expense.category.title,
         date: new Date(expense.date).toISOString().split("T")[0], // Format date for input
-        paymentMethod: expense.paymentMethod,
+        paymentMethod: expense.paymentMethod.title,
         notes: expense.notes || "",
       });
     } else {

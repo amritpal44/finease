@@ -14,7 +14,7 @@ export default function PaymentMethodSelect({
       return paymentMethods;
     }
     return paymentMethods.filter((method) =>
-      method.name.toLowerCase().includes(searchText.toLowerCase())
+      method.title.toLowerCase().includes(searchText.toLowerCase())
     );
   }, [paymentMethods, searchText]);
 

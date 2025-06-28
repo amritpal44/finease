@@ -5,9 +5,10 @@ export default function AddNewExpenseButton({ onClick }) {
   return (
     <button
       onClick={onClick}
-      className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+      className="flex items-center gap-1 bg-[#3d65ff] hover:bg-[#2746b6] text-white font-medium px-4 py-2 rounded-lg shadow-md transition-all duration-150 text-sm focus:outline-none focus:ring-2 focus:ring-[#3d65ff]/40 cursor-pointer"
     >
-      + Add New Expense
+      <span className="text-lg font-bold">+</span>
+      <span>Add New Expense</span>
     </button>
   );
 }

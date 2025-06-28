@@ -14,7 +14,7 @@ export default function CategorySelect({
       return categories;
     }
     return categories.filter((category) =>
-      category.name.toLowerCase().includes(searchText.toLowerCase())
+      category.title.toLowerCase().includes(searchText.toLowerCase())
     );
   }, [categories, searchText]);
 
