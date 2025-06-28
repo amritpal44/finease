@@ -7,7 +7,7 @@ export default function Modal({ isOpen, onClose, children }) {
 
   return ReactDOM.createPortal(
     <div
-      className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+      className="fixed inset-0 backdrop-blur-lg  overflow-y-auto h-full w-full z-50"
       onClick={onClose}
     >
       <div

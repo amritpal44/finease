@@ -89,7 +89,8 @@ exports.searchExpenses = async (req, res) => {
 // Get filtered expenses based on date range, payment method, and category
 exports.getFilteredExpenses = async (req, res) => {
   try {
-    let { startDate, endDate, paymentMethod, category, page, limit } = req.query;
+    let { startDate, endDate, paymentMethod, category, page, limit, searchQuery } =
+      req.query;
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
     if (page < 1) page = 1;
@@ -105,14 +106,20 @@ exports.getFilteredExpenses = async (req, res) => {
       if (startDate) {
         const start = new Date(startDate);
         if (isNaN(start)) {
-          return res.status(400).json({ success: false, message: "Invalid startDate format. Use YYYY-MM-DD." });
+          return res.status(400).json({
+            success: false,
+            message: "Invalid startDate format. Use YYYY-MM-DD.",
+          });
         }
         filter.createdAt.$gte = start;
       }
       if (endDate) {
         const end = new Date(endDate);
         if (isNaN(end)) {
-          return res.status(400).json({ success: false, message: "Invalid endDate format. Use YYYY-MM-DD." });
+          return res.status(400).json({
+            success: false,
+            message: "Invalid endDate format. Use YYYY-MM-DD.",
+          });
         }
         end.setHours(23, 59, 59, 999);
         filter.createdAt.$lte = end;
@@ -129,14 +136,27 @@ exports.getFilteredExpenses = async (req, res) => {
       filter.category = category;
     }
 
-    const total = await Expense.countDocuments(filter);
-
-    const expenses = await Expense.find(filter)
+    // If q (search query) is present, filter after population
+    let allExpenses = await Expense.find(filter)
       .populate("category")
       .populate("paymentMethod")
-      .sort({ date: -1 })
-      .skip(skip)
-      .limit(limit);
+      .sort({ date: -1 });
+
+    if (searchQuery && typeof searchQuery === "string" && searchQuery.trim() !== "") {
+      const searchRegex = new RegExp(escapeRegExp(searchQuery), "i");
+      allExpenses = allExpenses.filter((exp) => {
+        const fields = [
+          exp.title,
+          exp.note,
+          exp.category?.title,
+          exp.paymentMethod?.title,
+        ];
+        return fields.some((field) => field && searchRegex.test(field));
+      });
+    }
+
+    const total = allExpenses.length;
+    const expenses = allExpenses.slice(skip, skip + limit);
 
     res.json({
       success: true,

@@ -19,18 +19,18 @@ export default function SearchBar({ onSearch }) {
   };
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center w-full max-w-md bg-white rounded-xl shadow-md overflow-hidden border border-[#3d65ff]/20">
       <input
         type="text"
         placeholder="Search expenses..."
-        className="rounded-l-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 p-2"
+        className="flex-1 px-4 py-2 text-[#1e2a47] bg-transparent focus:outline-none focus:ring-0 placeholder:text-[#3d65ff]/60 text-base"
         value={query}
         onChange={handleInputChange}
-        onKeyPress={handleKeyPress}
+        onKeyDown={handleKeyPress}
       />
       <button
         onClick={handleSearchClick}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r-md focus:outline-none focus:shadow-outline"
+        className="bg-[#3d65ff] hover:bg-[#2746b6] cursor-pointer text-white font-semibold px-6 py-2 rounded-none rounded-r-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#3d65ff]/30"
       >
         Search
       </button>

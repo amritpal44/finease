@@ -46,9 +46,12 @@ export default function DashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await filterExpenses(
-        token
-      );
+      const filter = {
+        page: page,
+        ...currentFilters,
+        searchQuery: currentSearchQuery,
+      };
+      const data = await filterExpenses(token, filter);
       setExpenses(data.expenses || []);
       setTotalPages(data.pagination?.totalPages || data.totalPages || 1);
     } catch (err) {
@@ -83,15 +86,18 @@ export default function DashboardPage() {
     }
   };
 
-  useEffect( () => {
+  useEffect(() => {
     if (token) {
-      fetchExpenses(token);
-      fetchCategoriesAndPaymentMethods()
-    }
-    else {
+      fetchExpenses(
+        queryState.currentPage,
+        queryState.filters,
+        queryState.searchQuery
+      );
+      fetchCategoriesAndPaymentMethods();
+    } else {
       console.log("Token not found, skipping fetchExpenses");
     }
-  }, [token]);
+  }, [token, queryState]);
 
   // useEffect(() => {
   //   if (token) {
@@ -211,8 +217,8 @@ export default function DashboardPage() {
           onFilterChange={handleFilterChange}
           categories={categories}
           paymentMethods={paymentMethods}
-        />
-        <SearchBar onSearch={handleSearch} /> */}
+        />*/}
+        <SearchBar onSearch={handleSearch} />
         <AddNewExpenseButton onClick={handleAddNewExpense} />
       </div>
 
@@ -235,7 +241,8 @@ export default function DashboardPage() {
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
-{/* 
+      
+      {/* 
       {analysisData && (
         <div className="mt-8">
           <h2 className="text-xl font-bold mb-4">Analysis</h2>
@@ -286,7 +293,6 @@ export default function DashboardPage() {
         />
       )}
 
-    {/*  
       {isConfirmModalOpen && (
         <ConfirmationModal
           isOpen={isConfirmModalOpen}
@@ -294,10 +300,7 @@ export default function DashboardPage() {
           onConfirm={handleConfirmDelete}
           message="Are you sure you want to delete this expense?"
         />
-      )} 
-    */}
-
-
+      )}
     </div>
   );
 }

@@ -34,13 +34,13 @@ export default function ExpenseCard({ expense, onEditClick, onDeleteClick }) {
       <div className="mt-4 flex justify-end gap-2">
         <button
           onClick={() => onEditClick(expense)}
-          className="px-4 py-1 rounded-full bg-[#eaf0ff] text-[#3d65ff] border border-[#3d65ff]/40 font-semibold shadow hover:bg-[#3d65ff] hover:text-white hover:shadow-lg transition-colors duration-150"
+          className="px-4 py-1 rounded-full cursor-pointer bg-[#eaf0ff] text-[#3d65ff] border border-[#3d65ff]/40 font-semibold shadow hover:bg-[#3d65ff] hover:text-white hover:shadow-lg transition-colors duration-150"
         >
           Edit
         </button>
         <button
           onClick={() => onDeleteClick(expense._id)}
-          className="px-4 py-1 rounded-full bg-[#fff0f0] text-[#e53e3e] border border-[#e53e3e]/30 font-semibold shadow hover:bg-[#e53e3e] hover:text-white hover:shadow-lg transition-colors duration-150"
+          className="px-4 py-1 rounded-full bg-[#fff0f0] cursor-pointer text-[#e53e3e] border border-[#e53e3e]/30 font-semibold shadow hover:bg-[#e53e3e] hover:text-white hover:shadow-lg transition-colors duration-150"
         >
           Delete
         </button>
