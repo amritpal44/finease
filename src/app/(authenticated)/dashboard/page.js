@@ -62,11 +62,85 @@ export default function DashboardPage() {
     }
   };
 
+  // Helper to process API analysis data
+  const processAnalysisData = (apiData) => {
+    if (!Array.isArray(apiData)) return {};
+    let totalSpentThisMonth = 0;
+    const categoryTotals = {};
+    const paymentTotals = {};
+    const categorySpending = {};
+    const spendingOverTime = [];
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+
+    apiData.forEach((dayObj) => {
+      let dayTotal = 0;
+      (dayObj.expenses || []).forEach((exp) => {
+        // Total spent this month
+        const expDate = new Date(exp.date);
+        if (
+          expDate.getMonth() === thisMonth &&
+          expDate.getFullYear() === thisYear
+        ) {
+          totalSpentThisMonth += exp.amount;
+        }
+        // Category totals
+        const cat = exp.category?.title || "Unknown";
+        categoryTotals[cat] = (categoryTotals[cat] || 0) + exp.amount;
+        categorySpending[cat] = (categorySpending[cat] || 0) + exp.amount;
+        // Payment method totals
+        const pm = exp.paymentMethod?.title || "Unknown";
+        paymentTotals[pm] = (paymentTotals[pm] || 0) + exp.amount;
+        dayTotal += exp.amount;
+      });
+      // Spending over time (line chart)
+      spendingOverTime.push({
+        label: dayObj.day,
+        value: dayTotal,
+      });
+    });
+
+    // Top category
+    let topCategory = null;
+    let maxCat = 0;
+    Object.entries(categoryTotals).forEach(([cat, amt]) => {
+      if (amt > maxCat) {
+        maxCat = amt;
+        topCategory = cat;
+      }
+    });
+
+    // Top 3 payment methods
+    const topPaymentMethods = Object.entries(paymentTotals)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([pm]) => pm);
+
+    // Pie chart data
+    const pieData = Object.entries(categorySpending).map(([cat, amt]) => ({
+      label: cat,
+      value: amt,
+    }));
+
+    // Line chart data
+    const lineData = spendingOverTime;
+
+    return {
+      totalSpentThisMonth,
+      topCategory,
+      topPaymentMethods,
+      categorySpending: pieData,
+      spendingOverTime: lineData,
+    };
+  };
+
   // Fetch dashboard analysis data
   const fetchAnalysisData = async () => {
     try {
       const data = await getAnalysisData(token);
-      setAnalysisData(data.data || data); // Support both {data: ...} and direct
+      const arr = data.data || data;
+      setAnalysisData(processAnalysisData(arr));
     } catch (err) {
       console.error("Failed to fetch analysis data:", err);
     }
@@ -99,13 +173,11 @@ export default function DashboardPage() {
     }
   }, [token, queryState]);
 
-  // useEffect(() => {
-  //   if (token) {
-  //     fetchAnalysisData();
-  //     fetchCategoriesAndPaymentMethods();
-  //   }
-  //   // eslint-disable-next-line
-  // }, [token]);
+  useEffect(() => {
+    if (token) {
+      fetchAnalysisData();
+    }
+  }, [token]);
 
   // useEffect(() => {
   //   if (token) {
@@ -163,7 +235,7 @@ export default function DashboardPage() {
         queryState.filters,
         queryState.searchQuery
       );
-      // fetchAnalysisData();
+      fetchAnalysisData();
       handleCloseEditModal();
     } catch (err) {
       console.error("Failed to save expense:", err);
@@ -211,7 +283,6 @@ export default function DashboardPage() {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-
       <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
         <FilterBar
           filters={queryState.filters}
@@ -222,7 +293,6 @@ export default function DashboardPage() {
         <SearchBar onSearch={handleSearch} />
         <AddNewExpenseButton onClick={handleAddNewExpense} />
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {
           console.log("Expenses:", expenses) // Debugging line to check expenses
@@ -236,52 +306,70 @@ export default function DashboardPage() {
           />
         ))}
       </div>
-
       <Pagination
         currentPage={queryState.currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
-
-      {/* 
       {analysisData && (
-        <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4">Analysis</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white p-4 rounded shadow">
-              <h3 className="text-lg font-semibold mb-2">Monthly Summary</h3>
-              <p>
-                Total Spent this Month: ₹{analysisData.totalSpentThisMonth || 0}
-              </p>
-              <p>Top Category: {analysisData.topCategory?.title || "N/A"}</p>{" "}
-              <p>
-                Top 3 Payment Methods:{" "}
-                {(analysisData.topPaymentMethods || []).join(", ")}
-              </p>
+        <section className="mt-10">
+          <h2 className="text-2xl font-bold mb-6 text-[#eeeff1]">Analysis</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white/95 border border-[#3d65ff]/10 rounded-2xl shadow-lg p-6 flex flex-col justify-center min-h-[200px]">
+              <h3 className="text-lg font-semibold mb-3 text-[#3d65ff]">
+                Monthly Summary
+              </h3>
+              <div className="space-y-2 text-[#1e2a47] text-base">
+                <div className="flex items-center justify-between">
+                  <span>Total Spent this Month:</span>
+                  <span className="font-bold text-lg text-[#3d65ff]">
+                    ₹{analysisData.totalSpentThisMonth || 0}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Top Category:</span>
+                  <span className="font-semibold">
+                    {analysisData.topCategory || "N/A"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Top 3 Payment Methods:</span>
+                  <span className="font-semibold">
+                    {analysisData.topPaymentMethods?.join(", ") || "N/A"}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="bg-white p-4 rounded shadow">
-              <h3 className="text-lg font-semibold mb-2">Category Spending</h3>
-              {analysisData.categorySpending && (
-                <ChartComponent
-                  type="pie"
-                  data={analysisData.categorySpending}
-                />
-              )}
+            <div className="bg-white/95 border border-[#3d65ff]/10 rounded-2xl shadow-lg p-6 flex flex-col">
+              <h3 className="text-lg font-semibold mb-3 text-[#3d65ff]">
+                Category Spending
+              </h3>
+              <div className="flex-1 min-h-[220px]">
+                {analysisData.categorySpending && (
+                  <ChartComponent
+                    type="pie"
+                    data={analysisData.categorySpending}
+                  />
+                )}
+              </div>
             </div>
-            <div className="bg-white p-4 rounded shadow col-span-full">
-              <h3 className="text-lg font-semibold mb-2">Spending Over Time</h3>
-              {analysisData.spendingOverTime && (
-                <ChartComponent
-                  type="line"
-                  data={analysisData.spendingOverTime}
-                />
-              )}
+            <div className="bg-white/95 border border-[#3d65ff]/10 rounded-2xl shadow-lg p-6 col-span-full flex flex-col">
+              <h3 className="text-lg font-semibold mb-3 text-[#3d65ff]">
+                Spending Over Time
+              </h3>
+              <div className="flex-1 min-h-[220px]">
+                {analysisData.spendingOverTime && (
+                  <ChartComponent
+                    type="line"
+                    data={analysisData.spendingOverTime}
+                  />
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </section>
       )}
-      */}
-
+      
       {isEditModalOpen && (
         <ExpenseEditModal
           isOpen={isEditModalOpen}
@@ -293,7 +381,6 @@ export default function DashboardPage() {
           fetchCategoriesAndPaymentMethods={fetchCategoriesAndPaymentMethods}
         />
       )}
-
       {isConfirmModalOpen && (
         <ConfirmationModal
           isOpen={isConfirmModalOpen}

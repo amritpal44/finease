@@ -25,12 +25,8 @@ ChartJS.register(
 );
 
 export default function ChartComponent({ type, data }) {
-  // Basic error handling for data structure
-  if (
-    !data ||
-    (type === "pie" && !data.labels) ||
-    (type === "line" && !data.labels)
-  ) {
+  // Accepts data as array of {label, value} objects (from dashboard analysis)
+  if (!data || !Array.isArray(data) || data.length === 0) {
     return (
       <div className="text-center text-gray-500">
         No data available for this chart.
@@ -38,16 +34,19 @@ export default function ChartComponent({ type, data }) {
     );
   }
 
-  // Prepare data for Chart.js
+  // Convert to Chart.js format
+  const labels = data.map((d) => d.label);
+  const values = data.map((d) => d.value);
+
   let chartData;
   let options = {};
 
   if (type === "pie") {
     chartData = {
-      labels: data.labels,
+      labels,
       datasets: [
         {
-          data: data.values,
+          data: values,
           backgroundColor: [
             "#FF6384",
             "#36A2EB",
@@ -71,20 +70,32 @@ export default function ChartComponent({ type, data }) {
     };
     options = {
       responsive: true,
-      maintainAspectRatio: false, // Allow controlling size with parent div
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           position: "top",
+          labels: {
+            color: "#1e2a47",
+            font: { family: "inherit", size: 14 },
+          },
+        },
+        tooltip: {
+          bodyColor: "#fff", // Tooltip text color
+          titleColor: "#fff", // Tooltip title color (dark blue)
+          backgroundColor: "#1e2a47", // Tooltip background for contrast
+          borderColor: "#36A2EB",
+          borderWidth: 1,
+          displayColors: false,
         },
       },
     };
   } else if (type === "line") {
     chartData = {
-      labels: data.labels, // e.g., dates
+      labels, // e.g., dates
       datasets: [
         {
           label: "Spending",
-          data: data.values, // e.g., spending amount for each date
+          data: values, // e.g., spending amount for each date
           fill: false,
           borderColor: "rgb(75, 192, 192)",
           tension: 0.1,
@@ -93,14 +104,28 @@ export default function ChartComponent({ type, data }) {
     };
     options = {
       responsive: true,
-      maintainAspectRatio: false, // Allow controlling size with parent div
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           position: "top",
+          labels: {
+            color: "#1e2a47",
+            font: { family: "inherit", size: 14 },
+          },
         },
         title: {
           display: true,
           text: "Spending Over Time",
+          color: "#1e2a47",
+          font: { family: "inherit", size: 16, weight: "bold" },
+        },
+        tooltip: {
+          bodyColor: "#fff", // Tooltip text color
+          titleColor: "#fff", // Tooltip title color (dark blue)
+          backgroundColor: "#1e2a47", // Tooltip background for contrast
+          borderColor: "#36A2EB",
+          borderWidth: 1,
+          displayColors: false,
         },
       },
       scales: {
@@ -108,12 +133,24 @@ export default function ChartComponent({ type, data }) {
           title: {
             display: true,
             text: "Date",
+            color: "#1e2a47",
+            font: { family: "inherit", size: 13 },
+          },
+          ticks: {
+            color: "#1e2a47",
+            font: { family: "inherit", size: 12 },
           },
         },
         y: {
           title: {
             display: true,
             text: "Amount (₹)",
+            color: "#1e2a47",
+            font: { family: "inherit", size: 13 },
+          },
+          ticks: {
+            color: "#1e2a47",
+            font: { family: "inherit", size: 12 },
           },
         },
       },
@@ -125,11 +162,11 @@ export default function ChartComponent({ type, data }) {
   }
 
   return (
-    <div style={{ position: "relative", height: "300px", width: "100%" }}>
-      {" "}
-      {/* Container for responsive charts */}
-      {type === "pie" && <Pie data={chartData} options={options} />}
-      {type === "line" && <Line data={chartData} options={options} />}
+    <div className="w-full h-[300px] flex items-center justify-center bg-white rounded-lg shadow-sm p-2 md:p-4">
+      <div className="w-full h-full">
+        {type === "pie" && <Pie data={chartData} options={options} />}
+        {type === "line" && <Line data={chartData} options={options} />}
+      </div>
     </div>
   );
 }
