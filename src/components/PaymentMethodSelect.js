@@ -47,7 +47,7 @@ export default function PaymentMethodSelect({
             <li
               className="cursor-pointer select-none py-2 px-4 text-[#3d65ff] hover:bg-[#eaf0ff] rounded-t-lg"
               onClick={() => {
-                onSelectPaymentMethod("");
+                onSelectPaymentMethod(method._id);
                 setSearchText("");
               }}
             >

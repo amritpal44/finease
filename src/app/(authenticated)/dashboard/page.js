@@ -212,12 +212,13 @@ export default function DashboardPage() {
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
 
-      <div className="flex justify-between items-center mb-4">
-        {/* <FilterBar
+      <div className="flex justify-between items-center mb-4 gap-4 flex-wrap">
+        <FilterBar
+          filters={queryState.filters}
           onFilterChange={handleFilterChange}
           categories={categories}
           paymentMethods={paymentMethods}
-        />*/}
+        />
         <SearchBar onSearch={handleSearch} />
         <AddNewExpenseButton onClick={handleAddNewExpense} />
       </div>
@@ -241,7 +242,7 @@ export default function DashboardPage() {
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
-      
+
       {/* 
       {analysisData && (
         <div className="mt-8">

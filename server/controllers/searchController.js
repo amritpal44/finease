@@ -89,8 +89,15 @@ exports.searchExpenses = async (req, res) => {
 // Get filtered expenses based on date range, payment method, and category
 exports.getFilteredExpenses = async (req, res) => {
   try {
-    let { startDate, endDate, paymentMethod, category, page, limit, searchQuery } =
-      req.query;
+    let {
+      startDate,
+      endDate,
+      paymentMethod,
+      category,
+      page,
+      limit,
+      searchQuery,
+    } = req.query;
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
     if (page < 1) page = 1;
@@ -100,9 +107,9 @@ exports.getFilteredExpenses = async (req, res) => {
     // Build dynamic filter
     const filter = { user: req.user.id };
 
-    // Date range filter
+    // Date range filter (use expense date field)
     if (startDate || endDate) {
-      filter.createdAt = {};
+      filter.date = {};
       if (startDate) {
         const start = new Date(startDate);
         if (isNaN(start)) {
@@ -111,7 +118,7 @@ exports.getFilteredExpenses = async (req, res) => {
             message: "Invalid startDate format. Use YYYY-MM-DD.",
           });
         }
-        filter.createdAt.$gte = start;
+        filter.date.$gte = start;
       }
       if (endDate) {
         const end = new Date(endDate);
@@ -122,7 +129,7 @@ exports.getFilteredExpenses = async (req, res) => {
           });
         }
         end.setHours(23, 59, 59, 999);
-        filter.createdAt.$lte = end;
+        filter.date.$lte = end;
       }
     }
 
@@ -142,7 +149,11 @@ exports.getFilteredExpenses = async (req, res) => {
       .populate("paymentMethod")
       .sort({ date: -1 });
 
-    if (searchQuery && typeof searchQuery === "string" && searchQuery.trim() !== "") {
+    if (
+      searchQuery &&
+      typeof searchQuery === "string" &&
+      searchQuery.trim() !== ""
+    ) {
       const searchRegex = new RegExp(escapeRegExp(searchQuery), "i");
       allExpenses = allExpenses.filter((exp) => {
         const fields = [

@@ -46,7 +46,7 @@ export default function CategorySelect({
             <li
               className="cursor-pointer select-none py-2 px-4 text-[#3d65ff] hover:bg-[#eaf0ff] rounded-t-lg"
               onClick={() => {
-                onSelectCategory("");
+                onSelectCategory(category._id);
                 setSearchText("");
               }}
             >
