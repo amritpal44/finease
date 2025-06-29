@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Finease – Personal Finance Tracker
 
-## Getting Started
+Finease is a modern, full-stack personal finance tracker that helps users manage expenses, analyze spending, and set monthly budgets. Built with Next.js, Express, MongoDB, and Tailwind CSS, it features robust authentication, analytics, and a user-friendly UI.
 
-First, run the development server:
+---
+
+## 🚀 Features
+
+- **User Authentication** (JWT-secured)
+- **Expense Management:** Add, edit, delete, filter, and search expenses
+- **Category & Payment Method Management**
+- **Analysis & Visualization:**
+  - Total spent, top category, top payment methods
+  - Pie and line charts for category and time-based analysis
+  - Custom date range selector for analysis
+- **Monthly Budget:** View and edit monthly spend limit
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** Next.js (React), Tailwind CSS
+- **Backend:** Express.js, MongoDB (Mongoose)
+- **Authentication:** JWT
+
+---
+
+## ⚡ Getting Started
+
+### 1. Clone the repository
+
+```bash
+git clone <your-repo-url>
+cd finease
+```
+
+### 2. Install dependencies
+
+```bash
+# For frontend
+npm install
+# For backend (in /server)
+cd server && npm install
+```
+
+### 3. Environment Variables
+
+Create a `.env` file in the root and add:
+
+```
+NEXT_PUBLIC_BASE_URL=https://finease-0dj7.onrender.com/api
+```
+
+(See `.env.example` for reference)
+
+### 4. Run the development server
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 5. Start the backend
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```bash
+cd server
+npm start
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🧩 Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+- `/src/app` – Next.js app pages and layouts
+- `/src/components` – UI components (charts, modals, filter bar, etc.)
+- `/server` – Express backend (controllers, models, routes)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📦 Deployment
 
-## Deploy on Vercel
+- Environment variables managed via `.env` files
+- Ready for deployment on Vercel, Render, or any Node.js hosting
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🙌 Credits
+
+- Built by Amritpal Singh
+
+---
+
+## 📄 License
+
+MIT
