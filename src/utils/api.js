@@ -1,3 +1,8 @@
+// const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+console.log("API_BASE_URL:", API_BASE_URL);
+
+
 // Get current monthly budget
 export const getMonthlyBudget = async (token) => {
   const response = await fetch(`${API_BASE_URL}/expenses/budget`, {
@@ -5,7 +10,6 @@ export const getMonthlyBudget = async (token) => {
   });
   return handleResponse(response);
 };
-const API_BASE_URL = "http://localhost:5000/api";
 
 const handleResponse = async (response) => {
   if (!response.ok) {

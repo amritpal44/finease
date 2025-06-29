@@ -99,9 +99,9 @@ exports.getFilteredExpenses = async (req, res) => {
       searchQuery,
     } = req.query;
     page = parseInt(page) || 1;
-    limit = parseInt(limit) || 10;
+    limit = parseInt(limit) || 9;
     if (page < 1) page = 1;
-    if (limit < 1) limit = 10;
+    if (limit < 1) limit = 9;
     const skip = (page - 1) * limit;
 
     // Build dynamic filter
