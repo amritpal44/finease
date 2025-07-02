@@ -74,26 +74,16 @@ export default function DashboardPage() {
   // Helper to process API analysis data
   const processAnalysisData = (apiData) => {
     if (!Array.isArray(apiData)) return {};
-    let totalSpentThisMonth = 0;
+    let totalSpentInRange = 0;
     const categoryTotals = {};
     const paymentTotals = {};
     const categorySpending = {};
     const spendingOverTime = [];
-    const now = new Date();
-    const thisMonth = now.getMonth();
-    const thisYear = now.getFullYear();
 
     apiData.forEach((dayObj) => {
       let dayTotal = 0;
       (dayObj.expenses || []).forEach((exp) => {
-        // Total spent this month
-        const expDate = new Date(exp.date);
-        if (
-          expDate.getMonth() === thisMonth &&
-          expDate.getFullYear() === thisYear
-        ) {
-          totalSpentThisMonth += exp.amount;
-        }
+        totalSpentInRange += exp.amount;
         // Category totals
         const cat = exp.category?.title || "Unknown";
         categoryTotals[cat] = (categoryTotals[cat] || 0) + exp.amount;
@@ -136,7 +126,7 @@ export default function DashboardPage() {
     const lineData = spendingOverTime;
 
     return {
-      totalSpentThisMonth,
+      totalSpentInRange,
       topCategory,
       topPaymentMethods,
       categorySpending: pieData,
@@ -367,7 +357,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between">
                   <span>Total Spent this Range:</span>
                   <span className="font-bold text-lg text-[#3d65ff]">
-                    ₹{analysisData.totalSpentThisMonth || 0}
+                    ₹{analysisData.totalSpentInRange || 0}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">

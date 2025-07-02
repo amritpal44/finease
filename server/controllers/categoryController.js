@@ -1,6 +1,6 @@
 const Category = require("../models/categoryModel");
 const Expense = require("../models/expenseModel");
-
+const User = require("../models/userModel");
 
 exports.getAllCategories = async (req, res) => {
   try {
@@ -95,5 +95,76 @@ exports.deleteCategory = async (req, res) => {
       message: "Failed to delete category.",
       error: error.message,
     });
+  }
+};
+
+// Add or update a category budget for the logged-in user
+exports.setCategoryBudget = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { categoryId, limit } = req.body;
+    if (!categoryId || typeof limit !== "number" || limit < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid categoryId and limit are required.",
+      });
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+    }
+    // Check if budget for this category exists
+    const idx = user.categoryBudgets.findIndex(
+      (b) => b.category.toString() === categoryId
+    );
+    if (idx > -1) {
+      user.categoryBudgets[idx].limit = limit;
+    } else {
+      user.categoryBudgets.push({ category: categoryId, limit });
+    }
+    await user.save();
+    res.json({ success: true, categoryBudgets: user.categoryBudgets });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Failed to set category budget.",
+        error: error.message,
+      });
+  }
+};
+
+// Delete a category budget for the logged-in user
+exports.deleteCategoryBudget = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { categoryId } = req.body;
+    if (!categoryId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "categoryId is required." });
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+    }
+    user.categoryBudgets = user.categoryBudgets.filter(
+      (b) => b.category.toString() !== categoryId
+    );
+    await user.save();
+    res.json({ success: true, categoryBudgets: user.categoryBudgets });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Failed to delete category budget.",
+        error: error.message,
+      });
   }
 };

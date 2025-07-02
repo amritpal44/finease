@@ -1,6 +1,35 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LandingPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check for token in localStorage (or cookies if you use cookies)
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        const now = Math.floor(Date.now() / 1000);
+        if (payload.exp && payload.exp < now) {
+          // Token expired
+          localStorage.removeItem("token");
+          router.push("/login");
+        }
+      } catch (e) {
+        // Invalid token format
+        localStorage.removeItem("token");
+        router.push("/login");
+      }
+    } else {
+      router.push("/login");
+    }
+  }, [router]);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
       {" "}
