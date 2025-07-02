@@ -93,7 +93,7 @@ export default function EditMonthlyBudgetButton({ token }) {
               <div className="flex gap-2 w-full justify-end">
                 <button
                   type="button"
-                  className="px-3 py-1.5 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium"
+                  className="cursor-pointer px-3 py-1.5 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium"
                   onClick={handleClose}
                   disabled={loading}
                 >
@@ -101,7 +101,7 @@ export default function EditMonthlyBudgetButton({ token }) {
                 </button>
                 <button
                   type="submit"
-                  className="px-3 py-1.5 rounded bg-[#3d65ff] hover:bg-[#2746b6] text-white font-semibold"
+                  className="cursor-pointer px-3 py-1.5 rounded bg-[#3d65ff] hover:bg-[#2746b6] text-white font-semibold"
                   disabled={loading}
                 >
                   {loading ? "Saving..." : "Save"}

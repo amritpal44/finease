@@ -200,7 +200,7 @@ export const getUserCategoryBudgets = async (token) => {
 // Set category budget for a user
 export const setCategoryBudget = async (token, categoryId, limit) => {
   const response = await fetch(
-    `${API_BASE_URL}/categories/set-category-budget`,
+    `${API_BASE_URL}/categories/budget`,
     {
       method: "POST",
       headers: getAuthHeaders(token),

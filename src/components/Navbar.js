@@ -23,7 +23,7 @@ export default function Navbar() {
           {isLoggedIn ? (
             <button
               onClick={handleLogout}
-              className="text-gray-300 hover:text-white"
+              className="text-gray-300 hover:text-white cursor-pointer"
             >
               Logout
             </button>
