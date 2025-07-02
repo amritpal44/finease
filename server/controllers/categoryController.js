@@ -127,13 +127,11 @@ exports.setCategoryBudget = async (req, res) => {
     await user.save();
     res.json({ success: true, categoryBudgets: user.categoryBudgets });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Failed to set category budget.",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Failed to set category budget.",
+      error: error.message,
+    });
   }
 };
 
@@ -159,12 +157,60 @@ exports.deleteCategoryBudget = async (req, res) => {
     await user.save();
     res.json({ success: true, categoryBudgets: user.categoryBudgets });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Failed to delete category budget.",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete category budget.",
+      error: error.message,
+    });
+  }
+};
+
+// Get all unique categories used by the user in their expenses
+exports.getUserExpenseCategories = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    // Find all expenses for the user and get unique category IDs
+    const categories = await Expense.distinct("category", { user: userId });
+    res.json({ success: true, categories });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch user expense categories.",
+      error: error.message,
+    });
+  }
+};
+
+// Sync all categories used in expenses into user's categoryBudgets array (if not present, add with limit -1)
+exports.syncUserCategoryBudgets = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+    }
+    // Get all unique categories from expenses
+    const categories = await Expense.distinct("category", { user: userId });
+    let updated = false;
+    categories.forEach((catId) => {
+      if (
+        !user.categoryBudgets.some(
+          (b) => b.category.toString() === catId.toString()
+        )
+      ) {
+        user.categoryBudgets.push({ category: catId, limit: -1 });
+        updated = true;
+      }
+    });
+    if (updated) await user.save();
+    res.json({ success: true, categoryBudgets: user.categoryBudgets });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to sync user category budgets.",
+      error: error.message,
+    });
   }
 };
