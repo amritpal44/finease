@@ -2,6 +2,7 @@ const Expense = require("../models/expenseModel");
 const Category = require("../models/categoryModel");
 const PaymentMethod = require("../models/paymentMethodModel");
 const User = require("../models/userModel");
+const categoryController = require("./categoryController");
 
 // Get all expenses for the logged-in user (paginated)
 exports.getUserExpenses = async (req, res) => {
@@ -112,6 +113,11 @@ exports.createExpense = async (req, res) => {
       message: "Expense created successfully",
       expense,
     });
+    // Call syncUserCategoryBudgets after response
+    categoryController.syncUserCategoryBudgets(
+      { user: req.user },
+      { json: () => {}, status: () => ({ json: () => {} }) }
+    );
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -205,6 +211,11 @@ exports.updateExpense = async (req, res) => {
       message: "Expense updated successfully",
       expense,
     });
+    // Call syncUserCategoryBudgets after response
+    categoryController.syncUserCategoryBudgets(
+      { user: req.user },
+      { json: () => {}, status: () => ({ json: () => {} }) }
+    );
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -243,6 +254,11 @@ exports.deleteExpense = async (req, res) => {
     });
 
     res.json({ success: true, message: "Expense deleted successfully" });
+    // Call syncUserCategoryBudgets after response
+    categoryController.syncUserCategoryBudgets(
+      { user: req.user },
+      { json: () => {}, status: () => ({ json: () => {} }) }
+    );
   } catch (error) {
     res.status(500).json({
       success: false,

@@ -2,7 +2,6 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 console.log("API_BASE_URL:", API_BASE_URL);
 
-
 // Get current monthly budget
 export const getMonthlyBudget = async (token) => {
   const response = await fetch(`${API_BASE_URL}/expenses/budget`, {
@@ -182,6 +181,30 @@ export const filterExpenses = async (token, filters = {}) => {
     `${API_BASE_URL}/search/filter?${params.toString()}`,
     {
       headers: getAuthHeaders(token),
+    }
+  );
+  return handleResponse(response);
+};
+
+// Fetch user's category budgets (from /categories/user-expense-categories)
+export const getUserCategoryBudgets = async (token) => {
+  const response = await fetch(
+    `${API_BASE_URL}/categories/user-expense-categories`,
+    {
+      headers: getAuthHeaders(token),
+    }
+  );
+  return handleResponse(response);
+};
+
+// Set category budget for a user
+export const setCategoryBudget = async (token, categoryId, limit) => {
+  const response = await fetch(
+    `${API_BASE_URL}/categories/set-category-budget`,
+    {
+      method: "POST",
+      headers: getAuthHeaders(token),
+      body: JSON.stringify({ categoryId, limit }),
     }
   );
   return handleResponse(response);

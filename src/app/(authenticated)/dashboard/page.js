@@ -10,6 +10,7 @@ import Pagination from "../../../components/Pagination";
 import ChartComponent from "../../../components/ChartComponent";
 import AddNewExpenseButton from "../../../components/AddNewExpenseButton";
 import EditMonthlyBudgetButton from "../../../components/EditMonthlyBudgetButton";
+import EditCategoryBudgetsButton from "../../../components/EditCategoryBudgetsButton";
 import {
   getExpenses,
   getAnalysisData,
@@ -300,6 +301,7 @@ export default function DashboardPage() {
           <SearchBar onSearch={handleSearch} />
           <div className="flex items-center gap-2">
             <EditMonthlyBudgetButton token={token} />
+            <EditCategoryBudgetsButton token={token} />
             <AddNewExpenseButton onClick={handleAddNewExpense} />
           </div>
         </div>

@@ -169,8 +169,26 @@ exports.deleteCategoryBudget = async (req, res) => {
 exports.getUserExpenseCategories = async (req, res) => {
   try {
     const userId = req.user.id;
-    // Find all expenses for the user and get unique category IDs
-    const categories = await Expense.distinct("category", { user: userId });
+    // Fetch user's categoryBudgets and populate category object
+    const user = await User.findById(userId).populate(
+      "categoryBudgets.category"
+    );
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+    }
+    // Return all categories from user's categoryBudgets, populated
+    const categories = user.categoryBudgets.map((b) => {
+      const category = b.category;
+      const limit = b.limit;
+      return {
+        _id: category._id,
+        title: category.title,
+        description: category.description,
+        limit: limit,
+      };
+    });
     res.json({ success: true, categories });
   } catch (error) {
     res.status(500).json({
@@ -194,6 +212,7 @@ exports.syncUserCategoryBudgets = async (req, res) => {
     // Get all unique categories from expenses
     const categories = await Expense.distinct("category", { user: userId });
     let updated = false;
+    // Add missing categories
     categories.forEach((catId) => {
       if (
         !user.categoryBudgets.some(
@@ -204,6 +223,14 @@ exports.syncUserCategoryBudgets = async (req, res) => {
         updated = true;
       }
     });
+    // Remove categories from categoryBudgets that are no longer present in expenses
+    const beforeLength = user.categoryBudgets.length;
+    user.categoryBudgets = user.categoryBudgets.filter((b) =>
+      categories.map((c) => c.toString()).includes(b.category.toString())
+    );
+    if (user.categoryBudgets.length !== beforeLength) {
+      updated = true;
+    }
     if (updated) await user.save();
     res.json({ success: true, categoryBudgets: user.categoryBudgets });
   } catch (error) {
