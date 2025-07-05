@@ -8,7 +8,13 @@ from dotenv import load_dotenv
 load_dotenv() 
 
 app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins=["*"])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Example using OpenRouter (https://openrouter.ai/) as a free/cheap LLM API
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")  # Set in Render env
