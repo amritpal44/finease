@@ -1,6 +1,7 @@
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const categoryController = require("./categoryController");
 
 exports.signup = async (req, res) => {
   try {
@@ -125,6 +126,17 @@ exports.login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "72h" }
     );
+
+    // Sync user category budgets after login
+    try {
+      await categoryController.syncUserCategoryBudgets(
+        { user: { id: user._id } },
+        { json: () => {}, status: () => ({ json: () => {} }) }
+      );
+    } catch (e) {
+      // Log but do not block login
+      console.error("Error syncing user category budgets after login:", e);
+    }
 
     // Respond with success message and token
     return res.status(200).json({
