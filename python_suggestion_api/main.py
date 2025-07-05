@@ -34,7 +34,7 @@ def get_category_spending(expenses_by_day: List[Dict], category_id: str) -> floa
 def ml_agent_suggestions(expenses_by_day, category_budgets):
     prompt = (
         "Given the following user expenses and category budgets, "
-        "suggest up to 7 personalized financial tips. "
+        "suggest up to 5 personalized financial tips. "
         "Return your answer as a JSON array, where each item is an object with: "
         "'type' (error, warning, info), 'title' (short summary), and 'details' (explanation). "
         "Example: "

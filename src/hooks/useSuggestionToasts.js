@@ -78,7 +78,7 @@ export function useSuggestionToasts(token, apiKey) {
     if (!storageKey) return;
     intervalRef.current = setInterval(() => {
       showCurrentToast();
-    }, 10 * 1000);
+    }, 30 * 1000);
     return () => clearInterval(intervalRef.current);
     // eslint-disable-next-line
   }, [storageKey]);
