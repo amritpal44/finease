@@ -26,6 +26,7 @@ function SuggestionToastsAndChildren({ children }) {
         draggable
         pauseOnHover
         theme="colored"
+        style={{ minWidth: 400, maxWidth: 520 }}
       />
     </>
   );

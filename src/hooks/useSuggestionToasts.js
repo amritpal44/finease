@@ -1,103 +1,87 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 
 const SUGGESTION_API_URL =
   "https://finease-suggestion-api.onrender.com/suggestions";
 
 export function useSuggestionToasts(token, apiKey) {
-  const [suggestions, setSuggestions] = useState([]);
-  const [lastShown, setLastShown] = useState({});
-  const [currentIdx, setCurrentIdx] = useState(0);
   const intervalRef = useRef();
-  const storageKey = token ? `suggestionLastShown:${token}` : null;
+  const storageKey = token ? `suggestionToasts:${token}` : null;
 
-  // Fetch suggestions from API
-  const fetchSuggestions = async () => {
+  // Helper to clear and set new suggestion object in localStorage
+  const storeSuggestions = (suggestions) => {
+    if (!storageKey) return;
+    localStorage.removeItem(storageKey);
+    localStorage.setItem(
+      storageKey,
+      JSON.stringify({ data: suggestions, index: 0 })
+    );
+  };
+
+  // Fetch and store new suggestions
+  const fetchAndStoreSuggestions = async () => {
     if (!token || !apiKey) return;
     try {
       const res = await fetch(`${SUGGESTION_API_URL}?token=${token}`, {
         headers: { "x-api-key": apiKey },
       });
       const data = await res.json();
-      setSuggestions(data.suggestions || []);
-      setCurrentIdx(0);
-      setLastShown({});
-      if (storageKey) {
-        localStorage.setItem(storageKey, JSON.stringify({}));
+      if (Array.isArray(data.suggestions)) {
+        storeSuggestions(data.suggestions);
       }
     } catch (err) {
       // Optionally show a toast for fetch error
     }
   };
 
-  // Show the next suggestion as a toast
-  const showNextToast = () => {
-    if (suggestions.length === 0) return;
-    let shown = { ...lastShown };
-    let idx = 0;
-    // Find the first suggestion not shown
-    while (idx < suggestions.length && shown[idx]) {
-      idx++;
-    }
-    if (idx >= suggestions.length) {
-      // All shown, fetch new suggestions
-      fetchSuggestions();
+  // Show the toast for the current index
+  const showCurrentToast = () => {
+    if (!storageKey) return;
+    const obj = JSON.parse(localStorage.getItem(storageKey) || "null");
+    if (!obj || !Array.isArray(obj.data) || typeof obj.index !== "number")
+      return;
+    if (obj.index >= obj.data.length) {
+      // All shown, clear and fetch new
+      localStorage.removeItem(storageKey);
+      fetchAndStoreSuggestions();
       return;
     }
-    const sug = suggestions[idx];
+    const sug = obj.data[obj.index];
     let toastFn = toast.info;
     if (sug.type === "error") toastFn = toast.error;
     else if (sug.type === "warning") toastFn = toast.warn;
     toastFn(
-      <>
+      <div>
         <strong>{sug.title}</strong>
         <div>{sug.details}</div>
-      </>,
+      </div>,
       { autoClose: 10000 }
     );
-    shown[idx] = Date.now();
-    setLastShown(shown);
-    setCurrentIdx(idx + 1);
-    // Persist to localStorage
-    if (storageKey) {
-      localStorage.setItem(storageKey, JSON.stringify(shown));
-    }
+    // Increment index and store
+    localStorage.setItem(
+      storageKey,
+      JSON.stringify({ data: obj.data, index: obj.index + 1 })
+    );
   };
 
+  // On login/token change, fetch and store new suggestions
   useEffect(() => {
     if (!token || !apiKey) return;
-    // Load shown state from localStorage
-    let loaded = {};
-    if (storageKey) {
-      try {
-        loaded = JSON.parse(localStorage.getItem(storageKey)) || {};
-      } catch {
-        loaded = {};
-      }
-    }
-    setLastShown(loaded);
-    fetchSuggestions();
-    intervalRef.current = setInterval(showNextToast, 10 * 60 * 1000); // 10 min
-    return () => clearInterval(intervalRef.current);
+    fetchAndStoreSuggestions();
     // eslint-disable-next-line
   }, [token, apiKey]);
 
+  // Forever interval: every 10s, show toast for current index if data present
   useEffect(() => {
-    if (suggestions.length > 0) {
-      // Find the first unshown suggestion
-      let idx = 0;
-      while (idx < suggestions.length && lastShown[idx]) {
-        idx++;
-      }
-      setCurrentIdx(idx);
-      if (idx < suggestions.length) {
-        showNextToast();
-      }
-    }
+    if (!storageKey) return;
+    intervalRef.current = setInterval(() => {
+      showCurrentToast();
+    }, 10 * 1000);
+    return () => clearInterval(intervalRef.current);
     // eslint-disable-next-line
-  }, [suggestions, lastShown]);
+  }, [storageKey]);
 
-  return { suggestions, lastShown, fetchSuggestions, showNextToast };
+  return {};
 }
